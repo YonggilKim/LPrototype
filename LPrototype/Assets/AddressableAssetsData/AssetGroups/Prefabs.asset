@@ -1,0 +1,50 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
+  m_Name: Prefabs
+  m_EditorClassIdentifier: 
+  m_GroupName: Prefabs
+  m_Data:
+    m_SerializedData: []
+  m_GUID: f1cba19ff82b81e4892ea4cbc6029c6e
+  m_SerializeEntries:
+  - m_GUID: de284b9e0fe00d74ab16b1ff7e4bf1df
+    m_Address: Player
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Title
+  - m_GUID: caf2e9e712fa73944b68308a28e5b637
+    m_Address: Monster
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Title
+  - m_GUID: ec9e902eba421c14e947402b6750ae86
+    m_Address: Friend
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Title
+  - m_GUID: 15c0c2798649adf4b9741d7973bffce8
+    m_Address: StageBackground
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Title
+  - m_GUID: ac7e905b2426f5c40a71f5ab793fa8c7
+    m_Address: DamageFont
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Title
+  m_ReadOnly: 0
+  m_Settings: {fileID: 11400000, guid: 160b55112b3d9c14e8f3614f46ca6258, type: 2}
+  m_SchemaSet:
+    m_Schemas:
+    - {fileID: 11400000, guid: d132d39d4d29c1943927f3bc3647d4cf, type: 2}
+    - {fileID: 11400000, guid: 2cab86daafda07e42be2e07098ddc102, type: 2}

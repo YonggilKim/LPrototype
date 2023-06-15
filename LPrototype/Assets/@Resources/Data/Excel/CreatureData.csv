@@ -1,0 +1,6 @@
+﻿DataId,DescriptionTextID,Label,MaxHp,UpMaxHp,Atk,UpAtk,Def,MovSpeed,TotalExp,HpRate,AtkRate,DefRate,AttackRange,SkelotonDataID,IconLabel,SkillList
+201000,하얀쥐,Player,100,2,10,2,0,1,200,1,1,1,4,Rat_001,Icon_001,10001&10011&10021&10031&10041&10051&10061&10081&10131
+201001,회색쥐,Monster,39,5,5,2,0,1.1,200,1,1,1,2,Rat_002,Icon_002,
+201002,파란쥐,Friend,39,5,5,2,1,1.6,200,1,1,1,2,Rat_003,Icon_003,
+201003,녹색쥐,Friend,39,5,5,2,2,1.3,200,1,1,1,2.5,Rat_004,Icon_004,
+201004,빨간쥐,Friend,26,4,5,2,3,2,200,1,1,1,2,Rat_005,Icon_005,20091
