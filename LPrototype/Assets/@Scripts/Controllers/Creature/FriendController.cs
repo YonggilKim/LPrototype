@@ -7,7 +7,7 @@ public class FriendController : CreatureController
     public override bool Init()
     {
         base.Init();
-        ObjectType = Define.ObjectType.Player;
+        ObjectType = Define.ObjectType.Friend;
         return true;
     }
 

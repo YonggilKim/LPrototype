@@ -15,7 +15,7 @@ public class Map : MonoBehaviour
     {
         Grid = gameObject.GetOrAddComponent<GridController>();
         _grid = gameObject.GetOrAddComponent<UnityEngine.Grid>();
-        _grid.cellSize = new Vector3 (Define.CELLSIZE, Define.CELLSIZE, 0);
+        _grid.cellSize = Define.CELLSIZE;
         Managers.Game.CurrentMap = this;
     }
 

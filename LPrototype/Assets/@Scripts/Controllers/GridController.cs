@@ -1,19 +1,17 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using Unity.VisualScripting;
+using UnityEditor;
 using UnityEngine;
-
-class Cell
-{
-    public HashSet<CreatureController> Creatures { get; } = new HashSet<CreatureController>();
-}
+using static UnityEngine.GraphicsBuffer;
 
 public class GridController : BaseController
 {
     UnityEngine.Grid _grid;
 
-    Dictionary<Vector3Int, Cell> _cells = new Dictionary<Vector3Int, Cell>();
+    Dictionary<Vector3Int, CreatureController> _dicCreature = new Dictionary<Vector3Int, CreatureController>();
 
     public override bool Init()
     {
@@ -23,108 +21,133 @@ public class GridController : BaseController
 
         return true;
     }
+    //목표지점에 도착하면 add하기
 
     public void Add(CreatureController go)
     {
         Vector3Int cellPos = _grid.WorldToCell(go.transform.position);
 
-        Cell cell = GetCell(cellPos);
-        if (cell == null)
-            return;
-
-        cell.Creatures.Add(go);
+        if (_dicCreature.TryGetValue(cellPos, out CreatureController creatureController) == false)
+        {
+            _dicCreature.Add(cellPos, go);
+        }
     }
 
     public void Remove(CreatureController go)
     {
         Vector3Int cellPos = _grid.WorldToCell(go.transform.position);
 
-        Cell cell = GetCell(cellPos);
-        if (cell == null)
-            return;
-
-        cell.Creatures.Remove(go);
+        if (_dicCreature.TryGetValue(cellPos, out CreatureController creatureController) == true)
+        {
+            _dicCreature.Remove(cellPos);
+        }
     }
 
-    Cell GetCell(Vector3Int cellPos)
+    public bool CanAdd(Vector3 woldPos)
     {
-        Cell cell = null;
-
-        if (_cells.TryGetValue(cellPos, out cell) == false)
-        {
-            cell = new Cell();
-            _cells.Add(cellPos, cell);
-        }
-
-        return cell;
-    }
-    public Vector3 GetNextPosition(Vector3 targetPos, float range)
-    {
-        List<CreatureController> objects = new List<CreatureController>();
-        List<Vector3> positions = new List<Vector3>();
-
-        Vector3Int left = _grid.WorldToCell(targetPos + new Vector3(-range, 0));
-        Vector3Int right = _grid.WorldToCell(targetPos + new Vector3(+range, 0));
-        Vector3Int center = _grid.WorldToCell(targetPos + new Vector3(-1, 0));
-        Vector3Int bottom = _grid.WorldToCell(targetPos + new Vector3(0, -range));
-        Vector3Int top = _grid.WorldToCell(targetPos + new Vector3(0, +range));
-
-        int minX = left.x;
-        int maxX = right.x;
-        int minY = bottom.y;
-        int maxY = top.y;
-
-        if (range < 0)// targetPos 왼쪽
-        {
-            minX = left.x;
-            maxX = (_grid.WorldToCell(targetPos + new Vector3(-1, 0))).x;
-        }
+        Vector3Int cellPos = _grid.WorldToCell(woldPos);
+        if (_dicCreature.TryGetValue(cellPos, out CreatureController creatureController) == true)
+            return false;
         else
-        {
-            minX = (_grid.WorldToCell(targetPos + new Vector3(1, 0))).x;
-            maxX = right.x;
-        }
+            return true;
+    }
 
-        for (int x = minX; x <= maxX; x++)
+    public void CalcCreaturesTargets()
+    {
+        List<CreatureController> allCreatures = new List<CreatureController>();
+        allCreatures.AddRange(Managers.Object.Friends);
+        allCreatures.AddRange(Managers.Object.Monsters);
+
+        foreach (CreatureController creature in allCreatures)
         {
-            for (int y = minY; y <= maxY; y++)
-            {
-                if (_cells.ContainsKey(new Vector3Int(x, y, 0)) == false)
-                {
-                    //CreatureController 없으면 월드좌표 리턴
-                    Vector3Int cellPosition = new Vector3Int(x, y, 0);
-                    return _grid.GetCellCenterWorld(cellPosition);
-                }
-            }
+            Vector3 dest = GetNextPosition(creature, creature.AtkRange);
+
+            //creature
         }
+    }
+
+    public Vector3 GetNextPosition(CreatureController target, float range)
+    {
+        //List<CreatureController> objects = new List<CreatureController>();
+
+        //List<Vector3> positions = new List<Vector3>();
+
+        //Vector3 targetPos = target.transform.position;
+
+        //Vector3Int left = _grid.WorldToCell(targetPos + new Vector3(-range, 0));
+        //Vector3Int right = _grid.WorldToCell(targetPos + new Vector3(+range, 0));
+        //Vector3Int center = _grid.WorldToCell(targetPos + new Vector3(-1, 0));
+        //Vector3Int bottom = _grid.WorldToCell(targetPos + new Vector3(0, -range));
+        //Vector3Int top = _grid.WorldToCell(targetPos + new Vector3(0, +range));
+
+        //int minX = left.x;
+        //int maxX = right.x;
+        //int minY = bottom.y;
+        //int maxY = top.y;
+
+        //switch (target.ObjectType)
+        //{
+        //    case Define.ObjectType.Player:
+        //    case Define.ObjectType.Friend:
+        //        minX = (_grid.WorldToCell(targetPos + new Vector3(1, 0))).x;
+        //        maxX = right.x;
+        //        break;
+        //    case Define.ObjectType.Monster:
+        //    case Define.ObjectType.Boss:
+        //        minX = left.x;
+        //        maxX = (_grid.WorldToCell(targetPos + new Vector3(-1, 0))).x;
+        //        break;
+        //}
+
+        //for (int x = minX; x <= maxX; x++)
+        //{
+        //    for (int y = minY; y <= maxY; y++)
+        //    {
+        //        if (_dicCreature.ContainsKey(new Vector3Int(x, y, 0)) == false)
+        //        {
+        //            //CreatureController 없으면 월드좌표 리턴
+        //            Vector3Int cellPosition = new Vector3Int(x, y, 0);
+        //            return _grid.CellToWorld(cellPosition);
+        //        }
+        //        else
+        //        {
+        //            _dicCreature.TryGetValue(new Vector3Int(x, y, 0), out Cell value);
+        //            Debug.Log(value.Creatures.ToList()[0]);
+        //        }
+        //    }
+        //}
         return Vector3.zero;
     }
 
-    public List<CreatureController> GatherObjects(Vector3 pos, float range)
+    private void OnDrawGizmos()
     {
-        List<CreatureController> objects = new List<CreatureController>();
+        //if (_grid == null)
+        //    return;
 
-        Vector3Int left = _grid.WorldToCell(pos + new Vector3(-range, 0));
-        Vector3Int right = _grid.WorldToCell(pos + new Vector3(+range, 0));
-        Vector3Int bottom = _grid.WorldToCell(pos + new Vector3(0, -range));
-        Vector3Int top = _grid.WorldToCell(pos + new Vector3(0, +range));
+        //Gizmos.color = Color.green;
 
-        int minX = left.x;
-        int maxX = right.x;
-        int minY = bottom.y;
-        int maxY = top.y;
+        //Vector3 gridSize = _grid.cellSize;
 
-        for (int x = minX; x <= maxX; x++)
-        {
-            for (int y = minY; y <= maxY; y++)
-            {
-                if (_cells.ContainsKey(new Vector3Int(x, y, 0)) == false)
-                    continue;
+        //for (int i = -20; i < 20; i++)
+        //{
+        //    for (int j = -20; j < 20; j++)
+        //    {
+        //        Vector3Int cellPosition = new Vector3Int(i, j, 0);
+        //        Vector3 worldPosition = _grid.CellToWorld(cellPosition);
+        //        Gizmos.color = (i == 0 && j == 0) ? Color.blue : Color.green;
+        //        Gizmos.DrawWireSphere(worldPosition, 0.1f);
 
-                objects.AddRange(_cells[new Vector3Int(x, y, 0)].Creatures);
-            }
-        }
+        //        string label = string.Format("({0}, {1})", i, j);
+        //        GUIStyle style = new GUIStyle();
+        //        style.normal.textColor = Color.white;
+        //        style.fontSize = 12;
+        //        Handles.Label(worldPosition, label, style);
 
-        return objects;
+        //        //label = string.Format("World: ({0:F1}, {1:F1}, {2:F1})", worldPosition.x, worldPosition.y, worldPosition.z);
+        //        //Handles.Label(worldPosition + new Vector3(0, -0.2f, 0), label, style);
+
+        //    }
+        //}
     }
+
 }

@@ -85,6 +85,7 @@ public class DataTransformer : EditorWindow
             cd.AtkRate = ConvertValue<float>(row[i++]);
             cd.DefRate = ConvertValue<float>(row[i++]);
             cd.AtkRange = ConvertValue<float>(row[i++]);
+            cd.CloneCount = ConvertValue<int>(row[i++]);
             cd.SkelotonDataID = ConvertValue<string>(row[i++]);
             cd.IconLabel = ConvertValue<string>(row[i++]);
             cd.SkillTypeList = ConvertList<int>(row[i++]);

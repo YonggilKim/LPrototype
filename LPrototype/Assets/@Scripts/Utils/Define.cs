@@ -12,6 +12,7 @@ public class Define
     public static int FRIEND_DATA_ID_1 = 201002;
     public static int FRIEND_DATA_ID_2 = 201003;
     public static int FRIEND_DATA_ID_3 = 201004;
+    public static int FRIEND_DATA_ID_4 = 201005;
     public static int MONSTER_DATA_ID = 201001;
     public static string STAGE_ID = "StageBackground";
     public static string CREACURE_ANIM_IDLE = "Idle1";
@@ -19,12 +20,19 @@ public class Define
     public static string CREACURE_ANIM_RUN = "Run";
 
     public static int Y_SPAWN_RANGE = 10;
-    public static int X_SPAWN_OFFSET = 2;
-    public static float CELLSIZE = 0.5f;
+    public static int X_SPAWN_OFFSET = 3;
+    public static Vector2 CELLSIZE = new Vector2(2, 1);
     #region Enum
+    public enum eGameState
+    {
+        StageReady,
+        Fight,
+        MoveNext,
+    }
     public enum eCreatureState
     {
         Idle,
+        Wait,
         Moving,
         Attack,
         Skill,

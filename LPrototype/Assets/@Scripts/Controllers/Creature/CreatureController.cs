@@ -2,6 +2,7 @@ using Data;
 using Spine.Unity;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.Rendering.LookDev;
 using UnityEngine;
 using static Define;
 using static UnityEngine.GraphicsBuffer;
@@ -26,6 +27,7 @@ public class CreatureController : BaseController
     Define.eCreatureState _creatureState = Define.eCreatureState.Moving;
 
     public CreatureController Target { get; set; } = null;
+    public Vector3 InitPos = Vector3.zero;
 
     public virtual Define.eCreatureState CreatureState
     {
@@ -36,12 +38,13 @@ public class CreatureController : BaseController
             UpdateAnimation();
         }
     }
-
+    
     public override bool Init()
     {
         base.Init();
         SkeletonAnim = GetComponent<SkeletonAnimation>();
         CenterTrans = transform.GetChild(0);
+        Managers.Game.OnGameStateChange += HandleGameState;
         return true;
     }
 
@@ -49,6 +52,29 @@ public class CreatureController : BaseController
     {
 
     }
+
+    private void OnDestroy()
+    {
+        if (Managers.Game != null)
+            Managers.Game.OnGameStateChange -= HandleGameState;
+    }
+    public virtual void SetInfo(int creatureId)
+    {
+        Dictionary<int, Data.CreatureData> dict = Managers.Data.CreatureDic;
+        CreatureData = dict[creatureId];
+        SkeletonAnim.skeletonDataAsset = Managers.Resource.Load<SkeletonDataAsset>(CreatureData.SkelotonDataID);
+        SkeletonAnim.Initialize(true);
+
+        MaxHp = CreatureData.MaxHp;
+        Hp = MaxHp;
+        Atk = CreatureData.Atk;
+        Def = CreatureData.Def;
+        MoveSpeed = CreatureData.MoveSpeed;
+        AtkRange = CreatureData.AtkRange;
+
+        CreatureState = eCreatureState.Wait;
+    }
+    
 
     public virtual void OnDamaged(BaseController attacker, float damage = 0)
     {
@@ -85,32 +111,18 @@ public class CreatureController : BaseController
 
         }
     }
-    
-    public virtual void SetInfo(int creatureId)
-    {
-        Dictionary<int, Data.CreatureData> dict = Managers.Data.CreatureDic;
-        CreatureData = dict[creatureId];
-        SkeletonAnim.skeletonDataAsset = Managers.Resource.Load<SkeletonDataAsset>(CreatureData.SkelotonDataID);
-        SkeletonAnim.Initialize(true);
-
-        MaxHp = CreatureData.MaxHp;
-        Hp = MaxHp;
-        Atk = CreatureData.Atk;
-        Def = CreatureData.Def;
-        MoveSpeed = CreatureData.MoveSpeed;
-        AtkRange = CreatureData.AtkRange;
-
-        CreatureState = eCreatureState.Idle;
-    }
 
     public virtual void UpdateAnimation()
     {
         switch (CreatureState)
         {
+            case Define.eCreatureState.Wait:
+                StopCoroutine(CoWait());
+                StartCoroutine(CoWait());
+                break;
             case Define.eCreatureState.Idle:
                 StopCoroutine(CoIdle());
                 StartCoroutine(CoIdle());
-
                 break;
             case Define.eCreatureState.Attack:
                 StopCoroutine(AttackTarget());
@@ -119,7 +131,10 @@ public class CreatureController : BaseController
             case Define.eCreatureState.Skill:
                 break;
             case Define.eCreatureState.Moving:
-                SkeletonAnim.AnimationState.SetAnimation(0, Define.CREACURE_ANIM_RUN, true);
+                if(ObjectType == ObjectType.Player)
+                    SkeletonAnim.AnimationState.SetAnimation(0, "Move", true);
+                else
+                    SkeletonAnim.AnimationState.SetAnimation(0, Define.CREACURE_ANIM_RUN, true);
                 StopCoroutine(MoveToTarget());
                 StartCoroutine(MoveToTarget());
                 break;
@@ -128,26 +143,73 @@ public class CreatureController : BaseController
         }
     }
 
-    IEnumerator CoIdle()
+    IEnumerator CoWait()
     {
-        while (true)
+        if (SkeletonAnim.AnimationName != Define.CREACURE_ANIM_IDLE)
         {
-            if (SkeletonAnim.AnimationName != Define.CREACURE_ANIM_IDLE)
-                SkeletonAnim.AnimationState.SetAnimation(0, Define.CREACURE_ANIM_IDLE, true);
-            //n초 대기 
+            yield return new WaitForSeconds(UnityEngine.Random.Range(0.1f, 1f));
 
-            //상대방 지정
-            Target = Managers.Object.FindTarget(this, CenterTrans.position);
-            if (Target.IsValid() == true)
+            if (ObjectType == ObjectType.Player)
             {
-                CreatureState = eCreatureState.Moving;
-                yield break;
+                SkeletonAnim.AnimationState.SetAnimation(0, "Idle", true);
             }
             else
             {
-                //CreatureState = eCreatureState.Idle;
-                yield return new WaitForSeconds(1);
+                SkeletonAnim.AnimationState.SetAnimation(0, Define.CREACURE_ANIM_IDLE, true);
             }
+        }
+    }
+
+    IEnumerator CoIdle()
+    {
+        if (SkeletonAnim.AnimationName != Define.CREACURE_ANIM_IDLE)
+        {
+
+            if (ObjectType == ObjectType.Player)
+            {
+                SkeletonAnim.AnimationState.SetAnimation(0, "Idle", true);
+            }
+            else
+            {
+                SkeletonAnim.AnimationState.SetAnimation(0, Define.CREACURE_ANIM_IDLE, true);
+            }
+        }
+        yield return new WaitForSeconds(UnityEngine.Random.Range(0.1f , 1f));
+
+        while (true)
+        {
+            //상대방 지정
+            if (Managers.Game.CurrentState == eGameState.Fight)
+            {
+                Target = Managers.Object.FindTarget(this, CenterTrans.position);
+                if (Target.IsValid() == true)
+                {
+                    CreatureState = eCreatureState.Moving;
+                    yield break;
+                }
+                else
+                {
+                    yield return new WaitForSeconds(1f);
+                }
+            }
+            //else if (Managers.Game.CurrentState == eGameState.MoveNext)
+            //{
+            //    n++;
+            //    float speed = 3f;
+            //    Vector3 dir = InitPos - transform.position;
+            //    dir.Normalize();
+            //    Vector3 newPosition = transform.position + dir * MoveSpeed * Time.deltaTime;
+            //    transform.position = newPosition;
+
+            //    // AtkRange = UnityEngine.Random.Range(1.5f,2.5f);
+            //    if (Vector3.Distance(transform.position, InitPos) < 0.1f)
+            //    {
+            //        transform.position = InitPos;
+            //        //Managers.Game.SetGameState(eGameState.StageReady);
+            //        yield break;
+            //    }
+            //    yield return null;
+            //}
         }
     }
 
@@ -173,45 +235,68 @@ public class CreatureController : BaseController
         }
     }
 
+    IEnumerator GoToInitPos()
+    {
+        //StopAllCoroutines();
+        while (true)
+        {
+            n++;
+            Vector3 dir = InitPos - transform.position;
+            dir.Normalize();
+            Vector3 newPosition = transform.position + dir * MoveSpeed * Time.deltaTime;
+            transform.position = newPosition;
+
+            if (Vector3.Distance(transform.position, InitPos) < 0.1f)
+            {
+                transform.position = InitPos;
+                yield break;
+            }
+            yield return null;
+        }
+    }
+
     float _deltaTime = 0;
     float _xScale = 1;
     float _yScale = 0.6f;
+    int n = 0;
     IEnumerator MoveToTarget()
     {
+        if (Managers.Game.CurrentState == eGameState.MoveNext)
+            yield break;
+        
         while (true)
         {
+            if (n == 100000)
+            {
+                Debug.Log("무한루프");
+                yield break;
+            }
             _deltaTime += Time.deltaTime;
             if (_deltaTime > 0.5f)
             {
-                Target = Managers.Object.FindTarget(this, CenterTrans.position);
+                Target = Managers.Object.FindTarget(this, transform.position);
                 _deltaTime = 0;
             }
-
-            if (Target.IsValid() == true)
+            if (Target.IsValid() == true && Managers.Game.CurrentState == eGameState.Fight)
             {
+                float newX = transform.position.x + (Target.transform.position.x - transform.position.x) * _xScale;
+                float newY = transform.position.y + (Target.transform.position.y - transform.position.y) * _yScale;
 
-                float range = (Target.transform.position.x - transform.position.x) > 0 ? AtkRange : AtkRange * -1;
-                Vector3 nextPosition = Managers.Game.CurrentMap.Grid.GetNextPosition(Target.transform.position, range);
+                Vector3 adjustedPosition = new Vector3(newX, newY, Target.transform.position.z);
 
-                //    float newX = transform.position.x + (Target.transform.position.x - transform.position.x) * _xScale;
-                //    float newY = transform.position.y + (Target.transform.position.y - transform.position.y) * _yScale;
-
-                //    Vector3 adjustedPosition = new Vector3(newX, newY, Target.transform.position.z);
-
-                //    // 타겟 방향으로 이동
-                    Vector3 dir = nextPosition - transform.position;
+                // 타겟 방향으로 이동
+                Vector3 dir = adjustedPosition - transform.position;
                 dir.Normalize();
                 Vector3 newPosition = transform.position + dir * MoveSpeed * Time.deltaTime;
                 transform.position = newPosition;
 
                 // AtkRange = UnityEngine.Random.Range(1.5f,2.5f);
-                if (Vector3.Distance(transform.position, nextPosition) <= 0.1f)
+                if (Vector3.Distance(transform.position, adjustedPosition) <= AtkRange)
                 {
                     // 공격 범위 안에 들어옴. 공격
                     CreatureState = eCreatureState.Attack;
                     yield break;
                 }
-
                 yield return null;
             }
             else
@@ -284,9 +369,32 @@ public class CreatureController : BaseController
             Gizmos.DrawLine(CenterTrans.position, Target.CenterTrans.position);
         }
 
+
+        Gizmos.DrawSphere(InitPos, 0.5f);
+
+
         // 디버그 레이 그리기
         //Gizmos.color = Color.yellow;
         //Gizmos.DrawRay(transform.position, transform.forward * 5f);
     }
 
+    public void HandleGameState(Define.eGameState newState)
+    {
+        switch (newState)
+        {
+            case eGameState.StageReady:
+                break;
+            case eGameState.Fight:
+                CreatureState = eCreatureState.Idle;
+                break;
+            case eGameState.MoveNext:
+                // go to init pos
+                if (this.IsValid() == true)
+                { 
+                    CreatureState = eCreatureState.Moving;
+                    StartCoroutine(GoToInitPos());
+                }
+                break;
+        }
+    }
 }

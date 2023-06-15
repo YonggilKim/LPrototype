@@ -47,6 +47,7 @@ namespace Data
         public float AtkRate;
         public float DefRate;
         public float AtkRange;
+        public int CloneCount;
         public string SkelotonDataID;
         public string IconLabel;
         public List<int> SkillTypeList;//InGameSkills를 제외한 추가스킬들

@@ -15,6 +15,7 @@
       "AtkRate": 1.0,
       "DefRate": 1.0,
       "AtkRange": 4.0,
+      "CloneCount": 1,
       "SkelotonDataID": "Rat_001",
       "IconLabel": "Icon_001",
       "SkillTypeList": [
@@ -44,6 +45,7 @@
       "AtkRate": 1.0,
       "DefRate": 1.0,
       "AtkRange": 2.0,
+      "CloneCount": 3,
       "SkelotonDataID": "Rat_002",
       "IconLabel": "Icon_002",
       "SkillTypeList": []
@@ -62,7 +64,8 @@
       "HpRate": 1.0,
       "AtkRate": 1.0,
       "DefRate": 1.0,
-      "AtkRange": 2.0,
+      "AtkRange": 1.5,
+      "CloneCount": 4,
       "SkelotonDataID": "Rat_003",
       "IconLabel": "Icon_003",
       "SkillTypeList": []
@@ -81,7 +84,8 @@
       "HpRate": 1.0,
       "AtkRate": 1.0,
       "DefRate": 1.0,
-      "AtkRange": 2.5,
+      "AtkRange": 1.7,
+      "CloneCount": 3,
       "SkelotonDataID": "Rat_004",
       "IconLabel": "Icon_004",
       "SkillTypeList": []
@@ -100,8 +104,31 @@
       "HpRate": 1.0,
       "AtkRate": 1.0,
       "DefRate": 1.0,
-      "AtkRange": 2.0,
+      "AtkRange": 1.0,
+      "CloneCount": 5,
       "SkelotonDataID": "Rat_005",
+      "IconLabel": "Icon_005",
+      "SkillTypeList": [
+        20091
+      ]
+    },
+    {
+      "DataId": 201005,
+      "DescriptionTextID": "빨간쥐",
+      "PrefabLabel": "Friend",
+      "MaxHp": 26.0,
+      "MaxHpBonus": 4.0,
+      "Atk": 5.0,
+      "AtkBonus": 2.0,
+      "Def": 3.0,
+      "MoveSpeed": 2.0,
+      "TotalExp": 200.0,
+      "HpRate": 1.0,
+      "AtkRate": 1.0,
+      "DefRate": 1.0,
+      "AtkRange": 1.0,
+      "CloneCount": 5,
+      "SkelotonDataID": "Rat_006",
       "IconLabel": "Icon_005",
       "SkillTypeList": [
         20091

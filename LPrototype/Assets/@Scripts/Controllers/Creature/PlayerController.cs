@@ -19,14 +19,10 @@ public class PlayerController : CreatureController
 
     public override void UpdateAnimation()
     {
-        base.UpdateAnimation();
+        //base.UpdateAnimation();
 
         switch (CreatureState)
         {
-            case Define.eCreatureState.Idle:
-                break;
-            case Define.eCreatureState.Skill:
-                break;
             case Define.eCreatureState.Moving:
                 break;
             case Define.eCreatureState.Dead:

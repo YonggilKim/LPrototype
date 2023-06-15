@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: Rat_001
   m_EditorClassIdentifier: 
   atlasAssets:
-  - {fileID: 11400000, guid: 6a920390d8d99f14595f27cfcf8b6a11, type: 2}
+  - {fileID: 11400000, guid: f6bd1ac340c27a6428146f1cc9d79c9c, type: 2}
   scale: 0.01
-  skeletonJSON: {fileID: 4900000, guid: 2f8fe2016d605254c8dbc501deda668c, type: 3}
+  skeletonJSON: {fileID: 4900000, guid: b74f4129c145afc4b894a06dfe4e099d, type: 3}
   isUpgradingBlendModeMaterials: 0
   blendModeMaterials:
     requiresBlendModeMaterials: 0
