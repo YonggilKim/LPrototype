@@ -27,21 +27,33 @@ public class GameManager
         switch (CurrentState)
         {
             case eGameState.StageReady:
+                SpawnFriends();
+                SpawnMonsters();
                 if (_coWaitStageReady != null)
                 {
                     CoroutineManager.StopCoroutine(_coWaitStageReady);
                     _coWaitStageReady = null; // Reset the coroutine reference
                 }
-                _coWaitStageReady = CoroutineManager.StartCoroutine(CoWaitStageReady());
+                _coWaitStageReady = CoroutineManager.StartCoroutine(CoWaitStageReady(isAll : true));
                 break;
             case eGameState.Fight:
                 break;
             case eGameState.MoveNext:
-
-                //친구들 InitPos로 이동
-
-                //SpawnMonsters();
-
+                if (_coWaitStageReady != null)
+                {
+                    CoroutineManager.StopCoroutine(_coWaitStageReady);
+                    _coWaitStageReady = null; // Reset the coroutine reference
+                }
+                _coWaitStageReady = CoroutineManager.StartCoroutine(CoWaitStageReady(eObjectType.Player));
+                break;
+            case eGameState.MonsterSpawn:
+                if (_coWaitStageReady != null)
+                {
+                    CoroutineManager.StopCoroutine(_coWaitStageReady);
+                    _coWaitStageReady = null; // Reset the coroutine reference
+                }
+                SpawnMonsters();
+                _coWaitStageReady = CoroutineManager.StartCoroutine(CoWaitStageReady(eObjectType.Monster));
                 break;
         }
     }
@@ -52,47 +64,63 @@ public class GameManager
         CoroutineManager.StartCoroutine(CoMonsterSpawn());
     }
 
-    public void SpawnFriendss()
+    public void SpawnFriends()
     {
         CoroutineManager.StartCoroutine(CoFriendsSpawn());
     }
 
-    IEnumerator CoWaitStageReady()
+    IEnumerator CoWaitStageReady(eObjectType objectType = eObjectType.Monster, bool isAll = false)
     {
         while (true)
         {
             yield return new WaitForSeconds(0.1f);
-            if (Managers.Object.CheckAllMonsterPosition() == true) // 애들 다 
+            if (Managers.Object.CheckCreaturePosition(objectType, isAll) == true) // 애들 다 
             {
                 _coWaitStageReady = null;
-                SetGameState(eGameState.Fight);
+                if(CurrentState  == eGameState.StageReady)
+                {
+                    SetGameState(eGameState.Fight);
+                }
+                else if (CurrentState == eGameState.MoveNext)
+                {
+                    SetGameState(eGameState.MonsterSpawn);
+                }
+                else if (CurrentState == eGameState.MonsterSpawn)
+                {
+                    SetGameState(eGameState.Fight);
+                }
                 yield break;
             }
         }
     }
+
     IEnumerator CoFriendsSpawn()
     {
-        Managers.Object.Spawn<PlayerController>(Vector3.zero, Define.PLAYER_DATA_ID);
+        if (Managers.Object.Friends.Count > 0)
+            yield break;
 
-        Managers.Object.Spawn<FriendController>(Vector3.zero, Define.FRIEND_DATA_ID_1, "Friend1");
-        Managers.Object.Spawn<FriendController>(Vector3.zero, Define.FRIEND_DATA_ID_2, "Friend3");
-        Managers.Object.Spawn<FriendController>(Vector3.zero, Define.FRIEND_DATA_ID_3, "Friend6");
-        Managers.Object.Spawn<FriendController>(Vector3.zero, Define.FRIEND_DATA_ID_4, "Friend6");
-        //Managers.Object.Spawn<FriendController>(Vector3.zero, Define.MONSTER_DATA_ID);
+        Managers.Object.Spawn<FriendController>(Vector3.zero, Define.FRIEND_DATA_ID_1);
+        Managers.Object.Spawn<FriendController>(Vector3.zero, Define.FRIEND_DATA_ID_1);
+        Managers.Object.Spawn<FriendController>(Vector3.zero, Define.PLAYER_DATA_ID);
+        Managers.Object.Spawn<FriendController>(Vector3.zero, Define.PLAYER_DATA_ID);
+        //Managers.Object.Spawn<PlayerController>(Vector3.zero, Define.PLAYER_DATA_ID);
+        //Managers.Object.Spawn<FriendController>(Vector3.zero, Define.FRIEND_DATA_ID_1, "Friend1");
+
+        //Managers.Object.Spawn<FriendController>(Vector3.zero, Define.FRIEND_DATA_ID_1, "Friend1");
 
         yield return new WaitForSeconds(UnityEngine.Random.Range(0.1f, 0.5f));
-
-        //Managers.Object.Spawn<FriendController>(Vector3.zero, Define.FRIEND_DATA_ID_3, "Friend7");
-        //Managers.Object.Spawn<FriendController>(Vector3.zero, Define.FRIEND_DATA_ID_3, "Friend8");
 
     }
 
     IEnumerator CoMonsterSpawn()
     {
         Managers.Object.Spawn<MonsterController>(Vector3.zero, Define.MONSTER_DATA_ID);
+        Managers.Object.Spawn<MonsterController>(Vector3.zero, Define.MONSTER_DATA_ID);
+        Managers.Object.Spawn<MonsterController>(Vector3.zero, Define.MONSTER_DATA_ID);
+        Managers.Object.Spawn<MonsterController>(Vector3.zero, Define.MONSTER_DATA_ID_1);
         //Managers.Object.Spawn<MonsterController>(Vector3.zero, Define.MONSTER_DATA_ID);
-        //Managers.Object.Spawn<MonsterController>(Vector3.zero, Define.MONSTER_DATA_ID);
-        //Managers.Object.Spawn<MonsterController>(Vector3.zero, Define.MONSTER_DATA_ID);
+        //Managers.Object.Spawn<MonsterController>(Vector3.zero, Define.MONSTER_DATA_ID_1);
+        //Managers.Object.Spawn<MonsterController>(Vector3.zero, Define.MONSTER_DATA_ID_1); 
 
         yield return new WaitForSeconds(UnityEngine.Random.Range(0.1f, 0.5f));
 

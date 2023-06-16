@@ -7,7 +7,7 @@ public class PlayerController : CreatureController
     public override bool Init()
     {
         base.Init();
-        ObjectType = Define.ObjectType.Player;
+        ObjectType = Define.eObjectType.Player;
         return true;
     }
 
@@ -19,7 +19,7 @@ public class PlayerController : CreatureController
 
     public override void UpdateAnimation()
     {
-        //base.UpdateAnimation();
+        base.UpdateAnimation();
 
         switch (CreatureState)
         {

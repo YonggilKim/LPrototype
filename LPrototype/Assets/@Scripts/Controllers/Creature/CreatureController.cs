@@ -2,10 +2,8 @@ using Data;
 using Spine.Unity;
 using System.Collections;
 using System.Collections.Generic;
-using UnityEditor.Rendering.LookDev;
 using UnityEngine;
 using static Define;
-using static UnityEngine.GraphicsBuffer;
 
 public class CreatureController : BaseController
 {
@@ -38,7 +36,7 @@ public class CreatureController : BaseController
             UpdateAnimation();
         }
     }
-    
+
     public override bool Init()
     {
         base.Init();
@@ -58,12 +56,14 @@ public class CreatureController : BaseController
         if (Managers.Game != null)
             Managers.Game.OnGameStateChange -= HandleGameState;
     }
+
     public virtual void SetInfo(int creatureId)
     {
         Dictionary<int, Data.CreatureData> dict = Managers.Data.CreatureDic;
         CreatureData = dict[creatureId];
         SkeletonAnim.skeletonDataAsset = Managers.Resource.Load<SkeletonDataAsset>(CreatureData.SkelotonDataID);
         SkeletonAnim.Initialize(true);
+        SkeletonAnim.Skeleton.SetSkin(CreatureData.SpineSkinName);
 
         MaxHp = CreatureData.MaxHp;
         Hp = MaxHp;
@@ -72,9 +72,12 @@ public class CreatureController : BaseController
         MoveSpeed = CreatureData.MoveSpeed;
         AtkRange = CreatureData.AtkRange;
 
-        CreatureState = eCreatureState.Wait;
+        if (this.IsValid() == true)
+        {
+            CreatureState = eCreatureState.Moving;
+            StartCoroutine(GoToInitPos());
+        }
     }
-    
 
     public virtual void OnDamaged(BaseController attacker, float damage = 0)
     {
@@ -102,13 +105,11 @@ public class CreatureController : BaseController
         if (Input.GetKeyDown(KeyCode.F1))
         {
             CreatureState = eCreatureState.Attack;
-
         }
 
         if (Input.GetKeyDown(KeyCode.F2))
         {
             CreatureState = eCreatureState.Idle;
-
         }
     }
 
@@ -131,10 +132,7 @@ public class CreatureController : BaseController
             case Define.eCreatureState.Skill:
                 break;
             case Define.eCreatureState.Moving:
-                if(ObjectType == ObjectType.Player)
-                    SkeletonAnim.AnimationState.SetAnimation(0, "Move", true);
-                else
-                    SkeletonAnim.AnimationState.SetAnimation(0, Define.CREACURE_ANIM_RUN, true);
+                SkeletonAnim.AnimationState.SetAnimation(0, CreatureData.AnimMove, true);
                 StopCoroutine(MoveToTarget());
                 StartCoroutine(MoveToTarget());
                 break;
@@ -145,36 +143,20 @@ public class CreatureController : BaseController
 
     IEnumerator CoWait()
     {
-        if (SkeletonAnim.AnimationName != Define.CREACURE_ANIM_IDLE)
+        if (SkeletonAnim.AnimationName != CreatureData.AnimIdle)
         {
             yield return new WaitForSeconds(UnityEngine.Random.Range(0.1f, 1f));
-
-            if (ObjectType == ObjectType.Player)
-            {
-                SkeletonAnim.AnimationState.SetAnimation(0, "Idle", true);
-            }
-            else
-            {
-                SkeletonAnim.AnimationState.SetAnimation(0, Define.CREACURE_ANIM_IDLE, true);
-            }
+            SkeletonAnim.AnimationState.SetAnimation(0, CreatureData.AnimIdle, true);
         }
     }
 
     IEnumerator CoIdle()
     {
-        if (SkeletonAnim.AnimationName != Define.CREACURE_ANIM_IDLE)
+        if (SkeletonAnim.AnimationName != CreatureData.AnimIdle)
         {
-
-            if (ObjectType == ObjectType.Player)
-            {
-                SkeletonAnim.AnimationState.SetAnimation(0, "Idle", true);
-            }
-            else
-            {
-                SkeletonAnim.AnimationState.SetAnimation(0, Define.CREACURE_ANIM_IDLE, true);
-            }
+            SkeletonAnim.AnimationState.SetAnimation(0, CreatureData.AnimIdle, true);
         }
-        yield return new WaitForSeconds(UnityEngine.Random.Range(0.1f , 1f));
+        yield return new WaitForSeconds(UnityEngine.Random.Range(0.1f, 1f));
 
         while (true)
         {
@@ -192,6 +174,11 @@ public class CreatureController : BaseController
                     yield return new WaitForSeconds(1f);
                 }
             }
+            else
+            {
+                yield break;
+            }
+
             //else if (Managers.Game.CurrentState == eGameState.MoveNext)
             //{
             //    n++;
@@ -217,8 +204,16 @@ public class CreatureController : BaseController
     {
         while (true)
         {
-            SkeletonAnim.AnimationState.SetAnimation(0, Define.CREACURE_ANIM_ATTACK, false);
-            SkeletonAnim.AnimationState.AddAnimation(0, Define.CREACURE_ANIM_IDLE, false, 0);
+            if (ObjectType == eObjectType.Player)
+            {
+                SkeletonAnim.AnimationState.SetAnimation(0, "Attack", false);
+                SkeletonAnim.AnimationState.AddAnimation(0, "Idle", false, 0);
+            }
+            else
+            {
+                SkeletonAnim.AnimationState.SetAnimation(0, CreatureData.AnimAttack, false);
+                SkeletonAnim.AnimationState.AddAnimation(0, CreatureData.AnimIdle, false, 0);
+            }
 
             Target = Managers.Object.FindTarget(this, CenterTrans.position);
 
@@ -237,20 +232,34 @@ public class CreatureController : BaseController
 
     IEnumerator GoToInitPos()
     {
+        n = 0;
+        SkeletonAnim.AnimationState.SetAnimation(0, CreatureData.AnimMove, true);
+
         //StopAllCoroutines();
         while (true)
         {
             n++;
             Vector3 dir = InitPos - transform.position;
             dir.Normalize();
-            Vector3 newPosition = transform.position + dir * MoveSpeed * Time.deltaTime;
+            Vector3 newPosition = transform.position + dir * 3 * Time.deltaTime;
             transform.position = newPosition;
+            //if (dir.x > 0)
+            //    SkeletonAnim.Skeleton.ScaleX = 1;
+            //else
+            //    SkeletonAnim.Skeleton.ScaleX = -1;
 
             if (Vector3.Distance(transform.position, InitPos) < 0.1f)
             {
                 transform.position = InitPos;
+                //CreatureState = eCreatureState.Wait;
                 yield break;
             }
+
+            if (n > 100000)
+            {
+                yield break;
+            }
+
             yield return null;
         }
     }
@@ -263,7 +272,7 @@ public class CreatureController : BaseController
     {
         if (Managers.Game.CurrentState == eGameState.MoveNext)
             yield break;
-        
+
         while (true)
         {
             if (n == 100000)
@@ -289,6 +298,10 @@ public class CreatureController : BaseController
                 dir.Normalize();
                 Vector3 newPosition = transform.position + dir * MoveSpeed * Time.deltaTime;
                 transform.position = newPosition;
+                if (dir.x > 0)
+                    SkeletonAnim.Skeleton.ScaleX = 1;
+                else
+                    SkeletonAnim.Skeleton.ScaleX = -1;
 
                 // AtkRange = UnityEngine.Random.Range(1.5f,2.5f);
                 if (Vector3.Distance(transform.position, adjustedPosition) <= AtkRange)
@@ -362,7 +375,7 @@ public class CreatureController : BaseController
     {
         if (Target != null)
         {
-            if(ObjectType == ObjectType.Player || ObjectType == ObjectType.Friend)
+            if (ObjectType == eObjectType.Player || ObjectType == eObjectType.Friend)
                 Gizmos.color = Color.green;
             else
                 Gizmos.color = Color.red;
@@ -383,6 +396,8 @@ public class CreatureController : BaseController
         switch (newState)
         {
             case eGameState.StageReady:
+
+                break;
                 break;
             case eGameState.Fight:
                 CreatureState = eCreatureState.Idle;
@@ -390,7 +405,7 @@ public class CreatureController : BaseController
             case eGameState.MoveNext:
                 // go to init pos
                 if (this.IsValid() == true)
-                { 
+                {
                     CreatureState = eCreatureState.Moving;
                     StartCoroutine(GoToInitPos());
                 }

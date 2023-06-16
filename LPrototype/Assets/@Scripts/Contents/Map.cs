@@ -2,14 +2,12 @@ using DG.Tweening;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using UnityEditor.SceneManagement;
 using UnityEngine;
 
 public class Map : MonoBehaviour
 {
     public GridController Grid;//¿Þ ¿À À§ ¾Æ·¡
     UnityEngine.Grid _grid;
-
 
     public void Awake()
     {
@@ -18,7 +16,6 @@ public class Map : MonoBehaviour
         _grid.cellSize = Define.CELLSIZE;
         Managers.Game.CurrentMap = this;
     }
-
 
     public void ChangeMapSize(float targetRate, float time = 120)
     {

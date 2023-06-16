@@ -2,18 +2,12 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
 using System.IO;
-using System.Xml.Serialization;
-using System.Text;
-using System.Text.RegularExpressions;
-using System;
 using UnityEngine;
 using System.Linq;
-using UnityEditor.AddressableAssets;
 using Unity.Plastic.Newtonsoft.Json;
 using Data;
 using System.ComponentModel;
 using static Define;
-using UnityEngine.Analytics;
 
 public class DataTransformer : EditorWindow
 {
@@ -87,6 +81,17 @@ public class DataTransformer : EditorWindow
             cd.AtkRange = ConvertValue<float>(row[i++]);
             cd.CloneCount = ConvertValue<int>(row[i++]);
             cd.SkelotonDataID = ConvertValue<string>(row[i++]);
+
+            cd.SpineSkinName = ConvertValue<string>(row[i++]);
+            cd.AnimIdle = ConvertValue<string>(row[i++]);
+            cd.AnimMove = ConvertValue<string>(row[i++]);
+            cd.AnimAttack = ConvertValue<string>(row[i++]);
+            cd.AnimSkillA = ConvertValue<string>(row[i++]);
+            cd.AnimSkillB = ConvertValue<string>(row[i++]);
+            cd.AnimSkillC = ConvertValue<string>(row[i++]);
+            cd.AnimUltimate = ConvertValue<string>(row[i++]);
+            cd.AnimDamaged = ConvertValue<string>(row[i++]);
+            cd.AnimDead = ConvertValue<string>(row[i++]);
             cd.IconLabel = ConvertValue<string>(row[i++]);
             cd.SkillTypeList = ConvertList<int>(row[i++]);
             loader.creatures.Add(cd);

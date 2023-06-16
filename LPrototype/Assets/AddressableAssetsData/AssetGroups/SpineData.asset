@@ -17,37 +17,13 @@ MonoBehaviour:
     m_SerializedData: []
   m_GUID: 9f7e3460edc76ae4780171bd0befec8c
   m_SerializeEntries:
+  - m_GUID: 737707d14606d7340b6015bf46741702
+    m_Address: SmallRangeRat_001_SkeletonData
+    m_ReadOnly: 0
+    m_SerializedLabels:
+    - Title
   - m_GUID: 737ca9536d1f24a4bbb4c51b4de89e93
-    m_Address: Rat_001
-    m_ReadOnly: 0
-    m_SerializedLabels:
-    - Title
-  - m_GUID: b222762f3d57cc8498271c11aeb127f6
-    m_Address: Rat_002
-    m_ReadOnly: 0
-    m_SerializedLabels:
-    - TItle
-    - Title
-  - m_GUID: c330f65df4242d142989a07bda8663c3
-    m_Address: Rat_003
-    m_ReadOnly: 0
-    m_SerializedLabels:
-    - TItle
-    - Title
-  - m_GUID: 35e63610e3759cf44b4752fa145261de
-    m_Address: Rat_004
-    m_ReadOnly: 0
-    m_SerializedLabels:
-    - TItle
-    - Title
-  - m_GUID: 8de037d7311ec4841a8557ea109e7778
-    m_Address: Rat_005
-    m_ReadOnly: 0
-    m_SerializedLabels:
-    - TItle
-    - Title
-  - m_GUID: ce8eca24b0cddf846a5100e277dd096a
-    m_Address: Rat_06
+    m_Address: SmallMeleeRat_001_SkeletonData
     m_ReadOnly: 0
     m_SerializedLabels:
     - Title

@@ -1,14 +1,9 @@
 using Data;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
 using System.Linq;
-using System.Threading;
-using Unity.VisualScripting;
 using UnityEngine;
 using static Define;
-using static UnityEditor.ShaderGraph.Internal.KeywordDependentCollection;
 using Random = UnityEngine.Random;
 
 public class ObjectManager
@@ -60,7 +55,7 @@ public class ObjectManager
         {
             GameObject go = Managers.Resource.Instantiate(Managers.Data.CreatureDic[templateID].PrefabLabel);
             PlayerController creature = go.GetOrAddComponent<PlayerController>();
-            Vector3 spawnPosition = FindSpawnPosition(ObjectType.Player);
+            Vector3 spawnPosition = FindSpawnPosition(eObjectType.Player);
 
             go.transform.position = spawnPosition;
             creature.InitPos = spawnPosition;
@@ -74,7 +69,7 @@ public class ObjectManager
         }
         else if (type == typeof(MonsterController))
         {
-            Vector3 originalPos = FindSpawnPosition(ObjectType.Monster);
+            Vector3 originalPos = FindSpawnPosition(eObjectType.Monster);
             Data.CreatureData cd = Managers.Data.CreatureDic[templateID];
 
             float angleInterval = 360f / cd.CloneCount; // 360도를 몬스터 수로 나눈 각도 간격
@@ -93,7 +88,8 @@ public class ObjectManager
                     Vector3 offset = Quaternion.Euler(0f, 0f, angle) * Vector3.right;
                     spawnPosition += offset * 0.8f;
                 }
-                go.transform.position = spawnPosition;
+                Vector3 temp = new Vector3(spawnPosition.x + 6, spawnPosition.y, spawnPosition.z);
+                go.transform.position = temp;
                 creature.InitPos = spawnPosition;
 
                 creature.SetInfo(templateID);
@@ -106,7 +102,7 @@ public class ObjectManager
         }
         else if (type == typeof(FriendController))
         {
-            Vector3 originalPos = FindSpawnPosition(ObjectType.Friend);
+            Vector3 originalPos = FindSpawnPosition(eObjectType.Friend);
             Data.CreatureData cd = Managers.Data.CreatureDic[templateID];
 
             float angleInterval = 360f / cd.CloneCount; // 360도를 몬스터 수로 나눈 각도 간격
@@ -175,23 +171,44 @@ public class ObjectManager
 
     }
 
-    public bool CheckAllMonsterPosition()
+    public bool CheckCreaturePosition(eObjectType objectType = eObjectType.Monster, bool isAll = false)
     {
-        foreach (MonsterController monster in Monsters.ToList())
+        if (isAll)
         {
-            if (monster.transform.position != monster.InitPos)
-                return false;
+            foreach (MonsterController monster in Monsters.ToList())
+            {
+                if (monster.transform.position != monster.InitPos || monster.IsValid() == false)
+                    return false;
+            }
+            foreach (CreatureController monster in Friends.ToList())
+            {
+                if (monster.transform.position != monster.InitPos || monster.IsValid() == false)
+                    return false;
+            }
+            return true;
         }
 
-        foreach (CreatureController monster in Friends.ToList())
+        if (objectType == eObjectType.Monster || objectType == eObjectType.Boss)
         {
-            if (monster.transform.position != monster.InitPos)
-                return false;
+            foreach (MonsterController monster in Monsters.ToList())
+            {
+                if (monster.transform.position != monster.InitPos || monster.IsValid() == false)
+                    return false;
+            }
         }
+        else
+        {
+            foreach (CreatureController monster in Friends.ToList())
+            {
+                if (monster.transform.position != monster.InitPos || monster.IsValid() == false)
+                    return false;
+            }
 
+        }
         return true;
     }
-    public Vector3 FindSpawnPosition(ObjectType type)
+
+    public Vector3 FindSpawnPosition(eObjectType type)
     {
         float xMin = Managers.Game.Camera.Left;
         float xMax = Managers.Game.Camera.Right;
@@ -204,18 +221,18 @@ public class ObjectManager
         {
             switch (type)
             {
-                case ObjectType.Player:
+                case eObjectType.Player:
                     x = xMin + Define.X_SPAWN_OFFSET - 1f;
                     y = 2;
 
                     break;
-                case ObjectType.Friend: // 왼쪽에서 소환
+                case eObjectType.Friend: // 왼쪽에서 소환
                     x = xMin + Random.Range(Define.X_SPAWN_OFFSET, Define.X_SPAWN_OFFSET + 3.0f);
                     y = Random.Range(0f, 6f); // y 좌표 범위 (0부터 6까지의 랜덤한 값)
                     break;
-                case ObjectType.Monster:
-                case ObjectType.Boss:// 오른쪽에서 소환
-                    x = xMax - Random.Range(Define.X_SPAWN_OFFSET, Define.X_SPAWN_OFFSET + 3.0f);
+                case eObjectType.Monster:
+                case eObjectType.Boss:// 오른쪽에서 소환
+                    x = xMax - Random.Range(Define.X_SPAWN_OFFSET - 2, Define.X_SPAWN_OFFSET + 1.0f);
                     y = Random.Range(0f, 6f); // y 좌표 범위 (0부터 6까지의 랜덤한 값)
                     break;
                 default:
@@ -242,8 +259,8 @@ public class ObjectManager
         // 상대 진영에서 가장 가까운놈을 찾자
         switch (creature.ObjectType)
         {
-            case ObjectType.Player:
-            case ObjectType.Friend: // 왼쪽에서 소환
+            case eObjectType.Player:
+            case eObjectType.Friend: // 왼쪽에서 소환
                 // 몬스터중 가장 가까운놈 리턴
                 if (Monsters.Count == 0)
                     return null;
@@ -251,8 +268,8 @@ public class ObjectManager
                 MonsterController closestMonster = Monsters.OrderBy(monster => (position - monster.CenterTrans.position).sqrMagnitude).FirstOrDefault();
                 return closestMonster;
 
-            case ObjectType.Monster:
-            case ObjectType.Boss:// 오른쪽에서 소환
+            case eObjectType.Monster:
+            case eObjectType.Boss:// 오른쪽에서 소환
                                  //플레이어와 친구들중 가장 가까운놈
                 if (Friends.Count == 0)
                     return null;
@@ -266,7 +283,7 @@ public class ObjectManager
     {
         foreach (MonsterController monster in Monsters.ToList())
         {
-            if (monster.ObjectType == ObjectType.Monster)
+            if (monster.ObjectType == eObjectType.Monster)
                 monster.OnDead();
         }
 

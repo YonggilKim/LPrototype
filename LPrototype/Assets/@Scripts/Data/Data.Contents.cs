@@ -49,7 +49,18 @@ namespace Data
         public float AtkRange;
         public int CloneCount;
         public string SkelotonDataID;
+        public string SpineSkinName;
+        public string AnimIdle;
+        public string AnimMove;
+        public string AnimAttack;
+        public string AnimSkillA;
+        public string AnimSkillB;
+        public string AnimSkillC;
+        public string AnimUltimate;
+        public string AnimDamaged;
+        public string AnimDead;
         public string IconLabel;
+
         public List<int> SkillTypeList;//InGameSkills를 제외한 추가스킬들
     }
 

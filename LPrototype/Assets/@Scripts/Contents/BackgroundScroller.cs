@@ -2,25 +2,53 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEditor.Rendering;
 using UnityEngine;
+using static Define;
 
 public class BackgroundScroller : MonoBehaviour
 {
     private SpriteRenderer _spriteRenderer;
-    public float speed;
+    private float _speed = 0.15f;
     float _offset;
-    // Start is called before the first frame update
+    bool _enabled = false;
+
+    private void OnDestroy()
+    {
+        if (Managers.Game != null)
+            Managers.Game.OnGameStateChange -= HandleGameState;
+    }
+
     void Start()
     {
         _spriteRenderer = GetComponent<SpriteRenderer>();
+        Managers.Game.OnGameStateChange += HandleGameState;
     }
 
     // Update is called once per frame
     void Update()
     {
-        //if (Managers.Game.Player.CreatureState == Define.eCreatureState.Moving)
-        //{ 
-        //    _offset += Time.deltaTime * 0.3f;
-        //    _spriteRenderer.material.mainTextureOffset = new Vector2(_offset, 0);
-        //}
+        if (_enabled)
+        {
+            _offset += Time.deltaTime * _speed;
+            _spriteRenderer.material.mainTextureOffset = new Vector2(_offset, 0);
+        }
+    }
+
+    public void HandleGameState(Define.eGameState newState)
+    {
+        switch (newState)
+        {
+            case eGameState.StageReady:
+                _enabled = false;
+                break;
+            case eGameState.Fight:
+                _enabled = false; 
+                break;
+            case eGameState.MoveNext:
+                _enabled = true;
+                break;
+            default:
+                //_enabled = false;
+                break;
+        }
     }
 }

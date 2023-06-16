@@ -8,7 +8,8 @@ public class MonsterController : CreatureController
     public override bool Init()
     {
         base.Init();
-        ObjectType = Define.ObjectType.Monster;
+        ObjectType = Define.eObjectType.Monster;
+
         return true;
     }
 
@@ -18,8 +19,18 @@ public class MonsterController : CreatureController
         Managers.Object.Despawn(this);
     }
 
+    public override void SetInfo(int creatureId)
+    {
+        base.SetInfo(creatureId);
+        SkeletonAnim.Skeleton.ScaleX = -1;
+    }
     public override void UpdateAnimation()
     {
+        if(this.IsValid() == false || Hp < 0) 
+        {
+            Debug.Log($"{gameObject.name}({ObjectType}) inactive ");
+            return;
+        }
         base.UpdateAnimation();
 
         switch (CreatureState)

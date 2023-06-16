@@ -30,8 +30,7 @@ public class GameScene : BaseScene
 
         Managers.UI.ShowSceneUI<UI_GameScene>();
         Managers.Game.SetGameState(eGameState.StageReady);
-        Managers.Game.SpawnFriendss();
-        Managers.Game.SpawnMonsters();
+
         //Managers.Object.Spawn<MonsterController>(Vector3.zero, MONSTER_DATA_ID);
 
     }

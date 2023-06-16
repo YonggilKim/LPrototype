@@ -9,15 +9,13 @@ public class Define
     public static readonly Dictionary<Type, Array> _enumDict = new Dictionary<Type, Array>();
 
     public static int PLAYER_DATA_ID = 201000;
-    public static int FRIEND_DATA_ID_1 = 201002;
-    public static int FRIEND_DATA_ID_2 = 201003;
-    public static int FRIEND_DATA_ID_3 = 201004;
-    public static int FRIEND_DATA_ID_4 = 201005;
-    public static int MONSTER_DATA_ID = 201001;
+    public static int FRIEND_DATA_ID_1 = 201001;
+
+
+    public static int MONSTER_DATA_ID = 202000;
+    public static int MONSTER_DATA_ID_1 = 202001;
+    
     public static string STAGE_ID = "StageBackground";
-    public static string CREACURE_ANIM_IDLE = "Idle1";
-    public static string CREACURE_ANIM_ATTACK = "Attack1";
-    public static string CREACURE_ANIM_RUN = "Run";
 
     public static int Y_SPAWN_RANGE = 10;
     public static int X_SPAWN_OFFSET = 3;
@@ -28,6 +26,7 @@ public class Define
         StageReady,
         Fight,
         MoveNext,
+        MonsterSpawn
     }
     public enum eCreatureState
     {
@@ -38,7 +37,7 @@ public class Define
         Skill,
         Dead
     }
-    public enum ObjectType
+    public enum eObjectType
     {
         Player,
         Monster,
