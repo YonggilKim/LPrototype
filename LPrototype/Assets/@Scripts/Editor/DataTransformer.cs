@@ -66,6 +66,7 @@ public class DataTransformer : EditorWindow
             int i = 0;
             CreatureData cd = new CreatureData();
             cd.DataId = ConvertValue<int>(row[i++]);
+            cd.AttackType = ConvertValue<Define.eCreatureAttackType>(row[i++]);
             cd.DescriptionTextID = ConvertValue<string>(row[i++]);
             cd.PrefabLabel = ConvertValue<string>(row[i++]);
             cd.MaxHp = ConvertValue<float>(row[i++]);

@@ -61,14 +61,14 @@ public class UI_GameScene : UI_Scene
         GetText((int)Texts.CurrentState).text = newState.ToString();
         switch (newState)
         {
-            case eGameState.StageReady:
-                break;
-            case eGameState.Fight:
-                break;
-            case eGameState.MoveNext:
+            case eGameState.Preparation:
+            case eGameState.ArrangeFriends:
+            case eGameState.ArrangeFriends_OK:
+            case eGameState.SpawnMonster:
+            case eGameState.ArrangeMonster:
+            case eGameState.ArrangeMonster_OK:
                 break;
             default:
-                //_enabled = false;
                 break;
         }
     }

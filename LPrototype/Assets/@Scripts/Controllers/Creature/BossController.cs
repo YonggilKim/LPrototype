@@ -10,7 +10,7 @@ public class BossController : CreatureController
 
         switch (CreatureState)
         {
-            case Define.eCreatureState.Idle:
+            case Define.eCreatureState.FindingEnermy:
                 break;
             case Define.eCreatureState.Skill:
                 break;

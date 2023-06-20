@@ -52,72 +52,6 @@ public class GridController : BaseController
             return true;
     }
 
-    public void CalcCreaturesTargets()
-    {
-        List<CreatureController> allCreatures = new List<CreatureController>();
-        allCreatures.AddRange(Managers.Object.Friends);
-        allCreatures.AddRange(Managers.Object.Monsters);
-
-        foreach (CreatureController creature in allCreatures)
-        {
-            Vector3 dest = GetNextPosition(creature, creature.AtkRange);
-
-            //creature
-        }
-    }
-
-    public Vector3 GetNextPosition(CreatureController target, float range)
-    {
-        //List<CreatureController> objects = new List<CreatureController>();
-
-        //List<Vector3> positions = new List<Vector3>();
-
-        //Vector3 targetPos = target.transform.position;
-
-        //Vector3Int left = _grid.WorldToCell(targetPos + new Vector3(-range, 0));
-        //Vector3Int right = _grid.WorldToCell(targetPos + new Vector3(+range, 0));
-        //Vector3Int center = _grid.WorldToCell(targetPos + new Vector3(-1, 0));
-        //Vector3Int bottom = _grid.WorldToCell(targetPos + new Vector3(0, -range));
-        //Vector3Int top = _grid.WorldToCell(targetPos + new Vector3(0, +range));
-
-        //int minX = left.x;
-        //int maxX = right.x;
-        //int minY = bottom.y;
-        //int maxY = top.y;
-
-        //switch (target.ObjectType)
-        //{
-        //    case Define.ObjectType.Player:
-        //    case Define.ObjectType.Friend:
-        //        minX = (_grid.WorldToCell(targetPos + new Vector3(1, 0))).x;
-        //        maxX = right.x;
-        //        break;
-        //    case Define.ObjectType.Monster:
-        //    case Define.ObjectType.Boss:
-        //        minX = left.x;
-        //        maxX = (_grid.WorldToCell(targetPos + new Vector3(-1, 0))).x;
-        //        break;
-        //}
-
-        //for (int x = minX; x <= maxX; x++)
-        //{
-        //    for (int y = minY; y <= maxY; y++)
-        //    {
-        //        if (_dicCreature.ContainsKey(new Vector3Int(x, y, 0)) == false)
-        //        {
-        //            //CreatureController 없으면 월드좌표 리턴
-        //            Vector3Int cellPosition = new Vector3Int(x, y, 0);
-        //            return _grid.CellToWorld(cellPosition);
-        //        }
-        //        else
-        //        {
-        //            _dicCreature.TryGetValue(new Vector3Int(x, y, 0), out Cell value);
-        //            Debug.Log(value.Creatures.ToList()[0]);
-        //        }
-        //    }
-        //}
-        return Vector3.zero;
-    }
 
     private void OnDrawGizmos()
     {
@@ -130,7 +64,7 @@ public class GridController : BaseController
 
         //for (int i = -20; i < 20; i++)
         //{
-        //    for (int j = -20; j < 20; j++)
+        //    for (int j = 0; j < 6; j++)
         //    {
         //        Vector3Int cellPosition = new Vector3Int(i, j, 0);
         //        Vector3 worldPosition = _grid.CellToWorld(cellPosition);

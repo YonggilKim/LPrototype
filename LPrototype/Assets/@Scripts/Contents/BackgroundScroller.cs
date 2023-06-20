@@ -17,7 +17,7 @@ public class BackgroundScroller : MonoBehaviour
             Managers.Game.OnGameStateChange -= HandleGameState;
     }
 
-    void Start()
+    void Awake()
     {
         _spriteRenderer = GetComponent<SpriteRenderer>();
         Managers.Game.OnGameStateChange += HandleGameState;
@@ -37,17 +37,16 @@ public class BackgroundScroller : MonoBehaviour
     {
         switch (newState)
         {
-            case eGameState.StageReady:
-                _enabled = false;
-                break;
-            case eGameState.Fight:
-                _enabled = false; 
-                break;
-            case eGameState.MoveNext:
+            case eGameState.Preparation:
+            case eGameState.ArrangeFriends:
+            case eGameState.ArrangeFriends_OK:
+            case eGameState.SpawnMonster:
+            case eGameState.ArrangeMonster:
+            case eGameState.ArrangeMonster_OK:
                 _enabled = true;
                 break;
             default:
-                //_enabled = false;
+                _enabled = false;
                 break;
         }
     }

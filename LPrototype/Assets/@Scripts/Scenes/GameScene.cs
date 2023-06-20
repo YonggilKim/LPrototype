@@ -29,7 +29,7 @@ public class GameScene : BaseScene
         Managers.Object.LoadMap(Define.STAGE_ID);
 
         Managers.UI.ShowSceneUI<UI_GameScene>();
-        Managers.Game.SetGameState(eGameState.StageReady);
+        Managers.Game.CurrentState = eGameState.Preparation;
 
         //Managers.Object.Spawn<MonsterController>(Vector3.zero, MONSTER_DATA_ID);
 

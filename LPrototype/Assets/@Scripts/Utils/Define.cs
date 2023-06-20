@@ -21,17 +21,27 @@ public class Define
     public static int X_SPAWN_OFFSET = 3;
     public static Vector2 CELLSIZE = new Vector2(2, 1);
     #region Enum
+    public enum eCreatureAttackType
+    {
+        Melee,
+        Ranger,
+    }
+
     public enum eGameState
     {
-        StageReady,
+        Preparation,
+        ArrangeFriends,
+        ArrangeFriends_OK,
+        SpawnMonster,
+        ArrangeMonster,
+        ArrangeMonster_OK,
         Fight,
-        MoveNext,
-        MonsterSpawn
+        FightResult
     }
     public enum eCreatureState
     {
-        Idle,
-        Wait,
+        Arrange,
+        FindingEnermy,
         Moving,
         Attack,
         Skill,

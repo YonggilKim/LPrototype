@@ -10,50 +10,49 @@ public class GameManager
     public PlayerController Player { get; set; }
     public CameraController Camera { get; set; }
     public Map CurrentMap;
-    public eGameState CurrentState { get; set; }
     public event Action<eGameState> OnGameStateChange;
-
-    #region GameState
-    public void SetGameState(eGameState newState)
+    
+    eGameState _currentState;
+    public eGameState CurrentState 
     {
-        CurrentState = newState;
-        OnGameStateChange?.Invoke(CurrentState);
-        HandleGameState();
+        get
+        {
+            return _currentState;
+        }
+        set
+        {
+            _currentState = value;
+            OnGameStateChange?.Invoke(CurrentState);
+            HandleGameState();
+        }
     }
 
-    Coroutine _coWaitStageReady;
+
+    #region GameState
+
     private void HandleGameState()
     {
         switch (CurrentState)
         {
-            case eGameState.StageReady:
+            case eGameState.Preparation:
                 SpawnFriends();
+                CurrentState = eGameState.ArrangeFriends;
+                break;
+            case eGameState.ArrangeFriends:
+                break;
+            case eGameState.ArrangeFriends_OK:
                 SpawnMonsters();
-                if (_coWaitStageReady != null)
-                {
-                    CoroutineManager.StopCoroutine(_coWaitStageReady);
-                    _coWaitStageReady = null; // Reset the coroutine reference
-                }
-                _coWaitStageReady = CoroutineManager.StartCoroutine(CoWaitStageReady(isAll : true));
+                CurrentState = eGameState.ArrangeMonster;
+                break;
+            case eGameState.ArrangeMonster:
+                break;
+            case eGameState.ArrangeMonster_OK:
+                CurrentState = eGameState.Fight;
                 break;
             case eGameState.Fight:
                 break;
-            case eGameState.MoveNext:
-                if (_coWaitStageReady != null)
-                {
-                    CoroutineManager.StopCoroutine(_coWaitStageReady);
-                    _coWaitStageReady = null; // Reset the coroutine reference
-                }
-                _coWaitStageReady = CoroutineManager.StartCoroutine(CoWaitStageReady(eObjectType.Player));
-                break;
-            case eGameState.MonsterSpawn:
-                if (_coWaitStageReady != null)
-                {
-                    CoroutineManager.StopCoroutine(_coWaitStageReady);
-                    _coWaitStageReady = null; // Reset the coroutine reference
-                }
-                SpawnMonsters();
-                _coWaitStageReady = CoroutineManager.StartCoroutine(CoWaitStageReady(eObjectType.Monster));
+            case eGameState.FightResult:
+                CurrentState = eGameState.ArrangeFriends;
                 break;
         }
     }
@@ -61,68 +60,20 @@ public class GameManager
 
     public void SpawnMonsters()
     {
-        CoroutineManager.StartCoroutine(CoMonsterSpawn());
-    }
-
-    public void SpawnFriends()
-    {
-        CoroutineManager.StartCoroutine(CoFriendsSpawn());
-    }
-
-    IEnumerator CoWaitStageReady(eObjectType objectType = eObjectType.Monster, bool isAll = false)
-    {
-        while (true)
-        {
-            yield return new WaitForSeconds(0.1f);
-            if (Managers.Object.CheckCreaturePosition(objectType, isAll) == true) // ¾Öµé ´Ù 
-            {
-                _coWaitStageReady = null;
-                if(CurrentState  == eGameState.StageReady)
-                {
-                    SetGameState(eGameState.Fight);
-                }
-                else if (CurrentState == eGameState.MoveNext)
-                {
-                    SetGameState(eGameState.MonsterSpawn);
-                }
-                else if (CurrentState == eGameState.MonsterSpawn)
-                {
-                    SetGameState(eGameState.Fight);
-                }
-                yield break;
-            }
-        }
-    }
-
-    IEnumerator CoFriendsSpawn()
-    {
-        if (Managers.Object.Friends.Count > 0)
-            yield break;
-
-        Managers.Object.Spawn<FriendController>(Vector3.zero, Define.FRIEND_DATA_ID_1);
-        Managers.Object.Spawn<FriendController>(Vector3.zero, Define.FRIEND_DATA_ID_1);
-        Managers.Object.Spawn<FriendController>(Vector3.zero, Define.PLAYER_DATA_ID);
-        Managers.Object.Spawn<FriendController>(Vector3.zero, Define.PLAYER_DATA_ID);
-        //Managers.Object.Spawn<PlayerController>(Vector3.zero, Define.PLAYER_DATA_ID);
-        //Managers.Object.Spawn<FriendController>(Vector3.zero, Define.FRIEND_DATA_ID_1, "Friend1");
-
-        //Managers.Object.Spawn<FriendController>(Vector3.zero, Define.FRIEND_DATA_ID_1, "Friend1");
-
-        yield return new WaitForSeconds(UnityEngine.Random.Range(0.1f, 0.5f));
-
-    }
-
-    IEnumerator CoMonsterSpawn()
-    {
         Managers.Object.Spawn<MonsterController>(Vector3.zero, Define.MONSTER_DATA_ID);
         Managers.Object.Spawn<MonsterController>(Vector3.zero, Define.MONSTER_DATA_ID);
         Managers.Object.Spawn<MonsterController>(Vector3.zero, Define.MONSTER_DATA_ID);
         Managers.Object.Spawn<MonsterController>(Vector3.zero, Define.MONSTER_DATA_ID_1);
-        //Managers.Object.Spawn<MonsterController>(Vector3.zero, Define.MONSTER_DATA_ID);
-        //Managers.Object.Spawn<MonsterController>(Vector3.zero, Define.MONSTER_DATA_ID_1);
-        //Managers.Object.Spawn<MonsterController>(Vector3.zero, Define.MONSTER_DATA_ID_1); 
-
-        yield return new WaitForSeconds(UnityEngine.Random.Range(0.1f, 0.5f));
-
     }
+
+    public void SpawnFriends()
+    {
+        if (Managers.Object.Friends.Count > 0)
+            return;
+        Managers.Object.Spawn<FriendController>(Vector3.zero, Define.FRIEND_DATA_ID_1);
+        Managers.Object.Spawn<FriendController>(Vector3.zero, Define.FRIEND_DATA_ID_1);
+        Managers.Object.Spawn<FriendController>(Vector3.zero, Define.PLAYER_DATA_ID);
+        Managers.Object.Spawn<FriendController>(Vector3.zero, Define.PLAYER_DATA_ID);
+    }
+
 }

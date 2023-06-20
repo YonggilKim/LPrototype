@@ -26,6 +26,7 @@ public class CreatureController : BaseController
 
     public CreatureController Target { get; set; } = null;
     public Vector3 InitPos = Vector3.zero;
+    public bool HasArrived { get; private set; }
 
     public virtual Define.eCreatureState CreatureState
     {
@@ -48,7 +49,8 @@ public class CreatureController : BaseController
 
     public void OnEnable()
     {
-
+        HasArrived = false;
+        InitPos = Vector3.zero;
     }
 
     private void OnDestroy()
@@ -75,7 +77,7 @@ public class CreatureController : BaseController
         if (this.IsValid() == true)
         {
             CreatureState = eCreatureState.Moving;
-            StartCoroutine(GoToInitPos());
+            StartCoroutine(CoArrangePosition());
         }
     }
 
@@ -109,7 +111,7 @@ public class CreatureController : BaseController
 
         if (Input.GetKeyDown(KeyCode.F2))
         {
-            CreatureState = eCreatureState.Idle;
+            CreatureState = eCreatureState.FindingEnermy;
         }
     }
 
@@ -117,12 +119,14 @@ public class CreatureController : BaseController
     {
         switch (CreatureState)
         {
-            case Define.eCreatureState.Wait:
-                StopCoroutine(CoWait());
-                StartCoroutine(CoWait());
+            case Define.eCreatureState.Arrange:
+                if (SkeletonAnim.AnimationName != CreatureData.AnimMove)
+                    SkeletonAnim.AnimationState.SetAnimation(0, CreatureData.AnimMove, true);
                 break;
-            case Define.eCreatureState.Idle:
+            case Define.eCreatureState.FindingEnermy:
                 StopCoroutine(CoIdle());
+                StopCoroutine(AttackTarget());
+
                 StartCoroutine(CoIdle());
                 break;
             case Define.eCreatureState.Attack:
@@ -141,14 +145,6 @@ public class CreatureController : BaseController
         }
     }
 
-    IEnumerator CoWait()
-    {
-        if (SkeletonAnim.AnimationName != CreatureData.AnimIdle)
-        {
-            yield return new WaitForSeconds(UnityEngine.Random.Range(0.1f, 1f));
-            SkeletonAnim.AnimationState.SetAnimation(0, CreatureData.AnimIdle, true);
-        }
-    }
 
     IEnumerator CoIdle()
     {
@@ -156,7 +152,6 @@ public class CreatureController : BaseController
         {
             SkeletonAnim.AnimationState.SetAnimation(0, CreatureData.AnimIdle, true);
         }
-        yield return new WaitForSeconds(UnityEngine.Random.Range(0.1f, 1f));
 
         while (true)
         {
@@ -171,32 +166,13 @@ public class CreatureController : BaseController
                 }
                 else
                 {
-                    yield return new WaitForSeconds(1f);
+                    yield return null;
                 }
             }
             else
             {
                 yield break;
             }
-
-            //else if (Managers.Game.CurrentState == eGameState.MoveNext)
-            //{
-            //    n++;
-            //    float speed = 3f;
-            //    Vector3 dir = InitPos - transform.position;
-            //    dir.Normalize();
-            //    Vector3 newPosition = transform.position + dir * MoveSpeed * Time.deltaTime;
-            //    transform.position = newPosition;
-
-            //    // AtkRange = UnityEngine.Random.Range(1.5f,2.5f);
-            //    if (Vector3.Distance(transform.position, InitPos) < 0.1f)
-            //    {
-            //        transform.position = InitPos;
-            //        //Managers.Game.SetGameState(eGameState.StageReady);
-            //        yield break;
-            //    }
-            //    yield return null;
-            //}
         }
     }
 
@@ -204,6 +180,9 @@ public class CreatureController : BaseController
     {
         while (true)
         {
+            if (Managers.Game.CurrentState != eGameState.Fight)
+                yield break;
+
             if (ObjectType == eObjectType.Player)
             {
                 SkeletonAnim.AnimationState.SetAnimation(0, "Attack", false);
@@ -216,8 +195,8 @@ public class CreatureController : BaseController
             }
 
             Target = Managers.Object.FindTarget(this, CenterTrans.position);
-
-            if (Target.IsValid() == true)
+            float dist = Vector3.Distance(Target.transform.position, transform.position);
+            if (Target.IsValid() == true && dist < AtkRange)
             {
                 Target.OnDamaged(this);
             }
@@ -230,28 +209,23 @@ public class CreatureController : BaseController
         }
     }
 
-    IEnumerator GoToInitPos()
+    IEnumerator CoArrangePosition()
     {
         n = 0;
-        SkeletonAnim.AnimationState.SetAnimation(0, CreatureData.AnimMove, true);
-
-        //StopAllCoroutines();
         while (true)
         {
             n++;
             Vector3 dir = InitPos - transform.position;
             dir.Normalize();
-            Vector3 newPosition = transform.position + dir * 3 * Time.deltaTime;
+            Vector3 newPosition = transform.position + dir * MoveSpeed * Time.deltaTime;
             transform.position = newPosition;
-            //if (dir.x > 0)
-            //    SkeletonAnim.Skeleton.ScaleX = 1;
-            //else
-            //    SkeletonAnim.Skeleton.ScaleX = -1;
 
             if (Vector3.Distance(transform.position, InitPos) < 0.1f)
             {
                 transform.position = InitPos;
-                //CreatureState = eCreatureState.Wait;
+                HasArrived = true;
+                Managers.Object.CheckAllCreatureArrived();
+                //CreatureState = eCreatureState.Arrange_Wait;
                 yield break;
             }
 
@@ -270,8 +244,8 @@ public class CreatureController : BaseController
     int n = 0;
     IEnumerator MoveToTarget()
     {
-        if (Managers.Game.CurrentState == eGameState.MoveNext)
-            yield break;
+        //if (Managers.Game.CurrentState == eGameState.RePosition)
+        //    yield break;
 
         while (true)
         {
@@ -315,65 +289,15 @@ public class CreatureController : BaseController
             else
             {
                 // Idle로 돌아가서 다시 타겟 찾기
-                CreatureState = eCreatureState.Idle;
+                CreatureState = eCreatureState.FindingEnermy;
                 yield break;
             }
         }
     }
 
-    //float _deltaTime = 0;
-    //IEnumerator MoveToTarget()
-    //{
-    //    while (true)
-    //    {
-    //        _deltaTime += Time.deltaTime;
-    //        if (_deltaTime > 0.5f)
-    //        {
-    //            Target = Managers.Object.FindTarget(this, CenterTrans.position);
-    //            _deltaTime = 0;
-    //        }
-
-    //        if (Target.IsValid() == true)
-    //        {
-    //            float newY = transform.position.y + (Target.transform.position.y - transform.position.y) * 0.5f;
-
-    //            Vector3 adjustedPosition = new Vector3(Target.transform.position.x, newY, Target.transform.position.z);
-
-    //            //타겟방향으로 이동
-    //            Vector3 dir = adjustedPosition - transform.position;
-    //            dir.Normalize();
-    //            Vector3 newPosition = transform.position + dir * MoveSpeed * Time.deltaTime;
-    //            transform.position = newPosition;
-
-
-    //            //AtkRange = UnityEngine.Random.Range(1.5f,2.5f);
-    //            if (Vector3.Distance(transform.position, adjustedPosition) <= AtkRange)
-    //            {
-    //                if (Mathf.Abs(transform.position.y - Target.transform.position.y) < 0.3f)
-    //                {
-    //                    //타겟방향으로 y축으로 이동
-    //                    continue;
-    //                }
-
-    //                //공격범위 안에 들어옴. 공격
-    //                CreatureState = eCreatureState.Attack;
-    //                yield break;
-
-    //            }
-    //            yield return null;
-    //        }
-    //        else
-    //        {
-    //            //Idle로 돌아가서 다시 타겟 찾기
-    //            CreatureState = eCreatureState.Idle;
-    //            yield break;
-    //        }
-    //    }
-    //}
-
     private void OnDrawGizmos()
     {
-        if (Target != null)
+        if (Target.IsValid())
         {
             if (ObjectType == eObjectType.Player || ObjectType == eObjectType.Friend)
                 Gizmos.color = Color.green;
@@ -381,10 +305,15 @@ public class CreatureController : BaseController
                 Gizmos.color = Color.red;
             Gizmos.DrawLine(CenterTrans.position, Target.CenterTrans.position);
         }
+        else
+        {
+            //clear
+        }
 
 
         Gizmos.DrawSphere(InitPos, 0.5f);
-
+        Gizmos.color = new Color(1,1,1,0.5f);
+        Gizmos.DrawWireSphere(transform.position, AtkRange);
 
         // 디버그 레이 그리기
         //Gizmos.color = Color.yellow;
@@ -395,20 +324,37 @@ public class CreatureController : BaseController
     {
         switch (newState)
         {
-            case eGameState.StageReady:
-
+            case eGameState.Preparation:
                 break;
+            case eGameState.ArrangeFriends:
+                if (ObjectType == eObjectType.Friend || ObjectType == eObjectType.Player)
+                {
+                    if (this.IsValid() == true)
+                    {
+                        CreatureState = eCreatureState.Arrange;
+                        StartCoroutine(CoArrangePosition());
+                    }
+                }
+                break;
+            case eGameState.ArrangeFriends_OK:
+                break;
+            case eGameState.ArrangeMonster:
+                if (ObjectType == eObjectType.Monster || ObjectType == eObjectType.Boss)
+                {
+                    if (this.IsValid() == true)
+                    {
+                        CreatureState = eCreatureState.Arrange;
+                        StartCoroutine(CoArrangePosition());
+                    }
+                }
+                break;
+            case eGameState.ArrangeMonster_OK:
                 break;
             case eGameState.Fight:
-                CreatureState = eCreatureState.Idle;
+                CreatureState = eCreatureState.FindingEnermy;
                 break;
-            case eGameState.MoveNext:
-                // go to init pos
-                if (this.IsValid() == true)
-                {
-                    CreatureState = eCreatureState.Moving;
-                    StartCoroutine(GoToInitPos());
-                }
+            case eGameState.FightResult:
+                HasArrived = false;
                 break;
         }
     }

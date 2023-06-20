@@ -34,6 +34,7 @@ namespace Data
     public class CreatureData
     {
         public int DataId;
+        public Define.eCreatureAttackType AttackType;
         public string DescriptionTextID;
         public string PrefabLabel;
         public float MaxHp;
