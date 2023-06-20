@@ -2,13 +2,13 @@ using Data;
 using Spine.Unity;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
+using UnityEngine.UIElements;
 using static Define;
 
 public class CreatureController : BaseController
 {
-    public SkeletonAnimation SkeletonAnim;
-    public SkeletonDataAsset SkeletonData;
     public CreatureData CreatureData;
     public Transform CenterTrans { get; private set; }
     public virtual int DataId { get; set; }
@@ -120,24 +120,25 @@ public class CreatureController : BaseController
         switch (CreatureState)
         {
             case Define.eCreatureState.Arrange:
-                if (SkeletonAnim.AnimationName != CreatureData.AnimMove)
-                    SkeletonAnim.AnimationState.SetAnimation(0, CreatureData.AnimMove, true);
+                    PlayAnimation(0, CreatureData.AnimMove, true);
                 break;
             case Define.eCreatureState.FindingEnermy:
-                StopCoroutine(CoIdle());
-                StopCoroutine(AttackTarget());
-
+                //StopCoroutine(CoIdle());
+                //StopCoroutine(AttackTarget());
+                StopAllCoroutines();
                 StartCoroutine(CoIdle());
                 break;
             case Define.eCreatureState.Attack:
-                StopCoroutine(AttackTarget());
+                StopAllCoroutines();
+                //StopCoroutine(AttackTarget());
                 StartCoroutine(AttackTarget());
                 break;
             case Define.eCreatureState.Skill:
                 break;
             case Define.eCreatureState.Moving:
-                SkeletonAnim.AnimationState.SetAnimation(0, CreatureData.AnimMove, true);
+                PlayAnimation(0, CreatureData.AnimMove, true);
                 StopCoroutine(MoveToTarget());
+                StopAllCoroutines();
                 StartCoroutine(MoveToTarget());
                 break;
             case Define.eCreatureState.Dead:
@@ -148,9 +149,10 @@ public class CreatureController : BaseController
 
     IEnumerator CoIdle()
     {
+
         if (SkeletonAnim.AnimationName != CreatureData.AnimIdle)
         {
-            SkeletonAnim.AnimationState.SetAnimation(0, CreatureData.AnimIdle, true);
+            PlayAnimation(0, CreatureData.AnimIdle, true);
         }
 
         while (true)
@@ -171,6 +173,7 @@ public class CreatureController : BaseController
             }
             else
             {
+                HandleGameState(Managers.Game.CurrentState);
                 yield break;
             }
         }
@@ -180,32 +183,35 @@ public class CreatureController : BaseController
     {
         while (true)
         {
-            if (Managers.Game.CurrentState != eGameState.Fight)
-                yield break;
-
-            if (ObjectType == eObjectType.Player)
+            if (Managers.Game.CurrentState == eGameState.Fight)
             {
-                SkeletonAnim.AnimationState.SetAnimation(0, "Attack", false);
-                SkeletonAnim.AnimationState.AddAnimation(0, "Idle", false, 0);
+                if (Target.IsValid() == true)
+                {
+                    PlayAnimation(0, CreatureData.AnimAttack, false, () => 
+                    {
+                        OnAttack();
+                    });
+                    AddAnimation(0, CreatureData.AnimIdle, false, 0);
+                }
+                else
+                {
+                    CreatureState = eCreatureState.FindingEnermy;
+                    yield break;
+                }
             }
-            else
+            else 
             {
-                SkeletonAnim.AnimationState.SetAnimation(0, CreatureData.AnimAttack, false);
-                SkeletonAnim.AnimationState.AddAnimation(0, CreatureData.AnimIdle, false, 0);
-            }
-
-            Target = Managers.Object.FindTarget(this, CenterTrans.position);
-            float dist = Vector3.Distance(Target.transform.position, transform.position);
-            if (Target.IsValid() == true && dist < AtkRange)
-            {
-                Target.OnDamaged(this);
-            }
-            else
-            {
-                CreatureState = eCreatureState.Moving;
                 yield break;
             }
             yield return new WaitForSeconds(AtkSpeed);
+        }
+    }
+
+    void OnAttack()
+    {
+        if (Target.IsValid() == true)
+        {
+            Target.OnDamaged(this);
         }
     }
 
@@ -217,7 +223,7 @@ public class CreatureController : BaseController
             n++;
             Vector3 dir = InitPos - transform.position;
             dir.Normalize();
-            Vector3 newPosition = transform.position + dir * MoveSpeed * Time.deltaTime;
+            Vector3 newPosition = transform.position + dir * 3 * Time.deltaTime;
             transform.position = newPosition;
 
             if (Vector3.Distance(transform.position, InitPos) < 0.1f)
@@ -244,9 +250,6 @@ public class CreatureController : BaseController
     int n = 0;
     IEnumerator MoveToTarget()
     {
-        //if (Managers.Game.CurrentState == eGameState.RePosition)
-        //    yield break;
-
         while (true)
         {
             if (n == 100000)
@@ -284,7 +287,6 @@ public class CreatureController : BaseController
                     CreatureState = eCreatureState.Attack;
                     yield break;
                 }
-                yield return null;
             }
             else
             {
@@ -292,6 +294,8 @@ public class CreatureController : BaseController
                 CreatureState = eCreatureState.FindingEnermy;
                 yield break;
             }
+            yield return null;
+
         }
     }
 
@@ -311,10 +315,19 @@ public class CreatureController : BaseController
         }
 
 
-        Gizmos.DrawSphere(InitPos, 0.5f);
+        Gizmos.DrawSphere(InitPos, 0.1f);
         Gizmos.color = new Color(1,1,1,0.5f);
         Gizmos.DrawWireSphere(transform.position, AtkRange);
 
+        Vector3 position = transform.position;
+        float height = 1.5f;
+
+        Handles.color = Color.red;
+
+        GUIStyle style = new GUIStyle();
+        style.normal.textColor = Color.white;
+        style.fontSize = 28;
+        Handles.Label(position + Vector3.up * height, CreatureState.ToString());
         // 디버그 레이 그리기
         //Gizmos.color = Color.yellow;
         //Gizmos.DrawRay(transform.position, transform.forward * 5f);
