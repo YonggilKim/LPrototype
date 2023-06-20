@@ -11,9 +11,25 @@ public class GameManager
     public CameraController Camera { get; set; }
     public Map CurrentMap;
     public event Action<eGameState> OnGameStateChange;
-    
+    public event Action<int> OnGoldChange;
+
+    float _gold;
+    public float Gold
+    {
+        get
+        {
+            return _gold;
+        }
+        set
+        {
+            _gold = value;
+            OnGoldChange?.Invoke();
+
+        }
+    }
+
     eGameState _currentState;
-    public eGameState CurrentState 
+    public eGameState GameState 
     {
         get
         {
@@ -22,7 +38,7 @@ public class GameManager
         set
         {
             _currentState = value;
-            OnGameStateChange?.Invoke(CurrentState);
+            OnGameStateChange?.Invoke(GameState);
             HandleGameState();
         }
     }
@@ -32,27 +48,27 @@ public class GameManager
 
     private void HandleGameState()
     {
-        switch (CurrentState)
+        switch (GameState)
         {
             case eGameState.Preparation:
                 SpawnFriends();
-                CurrentState = eGameState.ArrangeFriends;
+                GameState = eGameState.ArrangeFriends;
                 break;
             case eGameState.ArrangeFriends:
                 break;
             case eGameState.ArrangeFriends_OK:
                 SpawnMonsters();
-                CurrentState = eGameState.ArrangeMonster;
+                GameState = eGameState.ArrangeMonster;
                 break;
             case eGameState.ArrangeMonster:
                 break;
             case eGameState.ArrangeMonster_OK:
-                CurrentState = eGameState.Fight;
+                GameState = eGameState.Fight;
                 break;
             case eGameState.Fight:
                 break;
             case eGameState.FightResult:
-                CurrentState = eGameState.ArrangeFriends;
+                GameState = eGameState.ArrangeFriends;
                 break;
         }
     }

@@ -17,10 +17,12 @@ public class UI_GameScene : UI_Scene
 
     enum Texts
     {
-        CurrentState
+        CurrentState,
+        GoldValue
     }
     #endregion
 
+    public RectTransform GoldUI { get; set; }
 
     public override bool Init()
     {
@@ -30,7 +32,8 @@ public class UI_GameScene : UI_Scene
         BindObject(typeof(GameObjects));
         BindText(typeof(Texts));
         Managers.Game.OnGameStateChange += HandleGameState;
-
+        Managers.Game.OnGoldChange += HandleGoldChange;
+        GoldUI = GetText((int)Texts.GoldValue).gameObject.GetComponent<RectTransform>();
         //GetObject((int)GameObjects.MonsterBtn).BindEvent(() => 
         //{
         //    Managers.Object.Spawn<MonsterController>(Vector3.zero, Define.MONSTER_DATA_ID);
@@ -72,5 +75,8 @@ public class UI_GameScene : UI_Scene
                 break;
         }
     }
-
+    public void HandleGoldChange(int gold)
+    {
+        GetText((int)Texts.GoldValue).text = gold.ToString();
+    }
 }

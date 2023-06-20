@@ -16,6 +16,7 @@ public class MonsterController : CreatureController
     public override void OnDead()
     {
         base.OnDead();
+        Managers.Object.Spawn<GoldController>(transform.position);
         Managers.Object.Despawn(this);
     }
 

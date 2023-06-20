@@ -158,7 +158,7 @@ public class CreatureController : BaseController
         while (true)
         {
             //상대방 지정
-            if (Managers.Game.CurrentState == eGameState.Fight)
+            if (Managers.Game.GameState == eGameState.Fight)
             {
                 Target = Managers.Object.FindTarget(this, CenterTrans.position);
                 if (Target.IsValid() == true)
@@ -173,7 +173,7 @@ public class CreatureController : BaseController
             }
             else
             {
-                HandleGameState(Managers.Game.CurrentState);
+                HandleGameState(Managers.Game.GameState);
                 yield break;
             }
         }
@@ -183,7 +183,7 @@ public class CreatureController : BaseController
     {
         while (true)
         {
-            if (Managers.Game.CurrentState == eGameState.Fight)
+            if (Managers.Game.GameState == eGameState.Fight)
             {
                 if (Target.IsValid() == true)
                 {
@@ -263,7 +263,7 @@ public class CreatureController : BaseController
                 Target = Managers.Object.FindTarget(this, transform.position);
                 _deltaTime = 0;
             }
-            if (Target.IsValid() == true && Managers.Game.CurrentState == eGameState.Fight)
+            if (Target.IsValid() == true && Managers.Game.GameState == eGameState.Fight)
             {
                 float newX = transform.position.x + (Target.transform.position.x - transform.position.x) * _xScale;
                 float newY = transform.position.y + (Target.transform.position.y - transform.position.y) * _yScale;

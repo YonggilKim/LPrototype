@@ -12,6 +12,7 @@ public class ObjectManager
     public PlayerController Player { get; private set; }
     public HashSet<MonsterController> Monsters { get; } = new HashSet<MonsterController>();
     public HashSet<CreatureController> Friends { get; } = new HashSet<CreatureController>();
+    public HashSet<GoldController> Golds { get; } = new HashSet<GoldController>();
     public event Action OnAllMonstersInPosition;
     public event Action OnAllFriendsInPosition;
     public event Action OnAllCreatureReturned;
@@ -134,6 +135,15 @@ public class ObjectManager
                 Friends.Add(creature);
                 Managers.Game.CurrentMap.Grid.Add(creature);
             }
+            return null;
+        }
+        else if (type == typeof(GoldController))
+        {
+            GameObject go = Managers.Resource.Instantiate($"Gold", pooling: true);
+
+            GoldController gold = go.GetOrAddComponent<GoldController>();
+            go.transform.position = position;
+            Golds.Add(gold);
         }
         return null;
     }
@@ -164,7 +174,7 @@ public class ObjectManager
             if (Monsters.Count == 0)
             {
                 //TODO Wave END!
-                Managers.Game.CurrentState = eGameState.FightResult;
+                Managers.Game.GameState = eGameState.FightResult;
             }
 
         }
@@ -174,7 +184,12 @@ public class ObjectManager
             Managers.Resource.Destroy(obj.gameObject);
             //Managers.Game.CurrentMap.Grid.Remove(obj as MonsterController);
         }
-
+        else if (type == typeof(GoldController))
+        {
+            Golds.Remove(obj as GoldController);
+            Managers.Resource.Destroy(obj.gameObject);
+            //Managers.Game.CurrentMap.Grid.Remove(obj as MonsterController);
+        }
     }
 
     public bool CheckAllMonstersArrived()
@@ -185,8 +200,8 @@ public class ObjectManager
                 return false;
         }
 
-        if (Managers.Game.CurrentState == eGameState.ArrangeMonster)
-            Managers.Game.CurrentState = eGameState.ArrangeMonster_OK;
+        if (Managers.Game.GameState == eGameState.ArrangeMonster)
+            Managers.Game.GameState = eGameState.ArrangeMonster_OK;
 
         return true;
     }
@@ -199,8 +214,8 @@ public class ObjectManager
                 return false;
         }
 
-        if (Managers.Game.CurrentState == eGameState.ArrangeFriends)
-            Managers.Game.CurrentState = eGameState.ArrangeFriends_OK;
+        if (Managers.Game.GameState == eGameState.ArrangeFriends)
+            Managers.Game.GameState = eGameState.ArrangeFriends_OK;
         
         return true;
     }
