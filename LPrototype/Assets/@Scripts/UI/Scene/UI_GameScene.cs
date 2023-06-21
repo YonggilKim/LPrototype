@@ -9,10 +9,7 @@ public class UI_GameScene : UI_Scene
     #region Enum
     enum GameObjects
     {
-        //FriendsBtn,
-        //MonsterBtn,
-        //ClearBtn,
-        //PlayerBtn
+        AtkUpbutton
     }
 
     enum Texts
