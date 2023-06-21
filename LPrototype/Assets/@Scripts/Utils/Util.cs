@@ -89,4 +89,11 @@ public static class Util
         return (T)Enum.Parse(typeof(T), value, true);
     }
 
+    // UI 좌표 -> 월드좌표로 변환
+    public static Vector3 ScreenPointToWorldPoint(RectTransform targetRect)
+    {
+        Vector3 result;
+        RectTransformUtility.ScreenPointToWorldPointInRectangle(targetRect, targetRect.position, Camera.main, out result);
+        return result;
+    }
 }

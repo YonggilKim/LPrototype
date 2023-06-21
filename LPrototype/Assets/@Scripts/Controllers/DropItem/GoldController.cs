@@ -18,17 +18,22 @@ public class GoldController : BaseController
         Managers.Game.OnGameStateChange += HandleGameState;
     }
 
+    //public void temp()
+    //{
+    //    Vector2 scrennPos = RectTransformUtility.WorldToScreenPoint(Camera.main, _imageTop.rectTransform.position);
+    //    Vector3 pos = Vector3.zero;
+
+    //    RectTransformUtility.ScreenPointToWorldPointInRectangle(_imageTop.rectTransform, scrennPos, Camera.main, out pos);
+    //    Debug.Log(scrennPos);
+    //    _trmSphere.position = pos;
+    //}
 
     public void MoveToUI()
     {
         RectTransform targetUI = Managers.UI.GetSceneUI<UI_GameScene>().GoldUI;
+        Vector3 result = Util.ScreenPointToWorldPoint(targetUI);
 
-        Vector3 screenPos = Camera.main.WorldToScreenPoint(transform.position);
-
-        Vector2 uiPos;
-        RectTransformUtility.ScreenPointToLocalPointInRectangle(targetUI, screenPos, null, out uiPos);
-
-        transform.DOMove(targetUI.TransformPoint(uiPos), 1).SetEase(Ease.OutQuad)
+        transform.DOMove(result, 1).SetEase(Ease.InOutQuad)
             .OnComplete(() => {
                 Managers.Game.Gold += 10;
                 Managers.Object.Despawn<GoldController>(this);
@@ -41,6 +46,8 @@ public class GoldController : BaseController
         {
             case eGameState.FightResult:
                 MoveToUI();
+
+
                 break;
         }
     }

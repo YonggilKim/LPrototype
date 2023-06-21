@@ -13,8 +13,8 @@ public class GameManager
     public event Action<eGameState> OnGameStateChange;
     public event Action<int> OnGoldChange;
 
-    float _gold;
-    public float Gold
+    int _gold;
+    public int Gold
     {
         get
         {
@@ -23,7 +23,7 @@ public class GameManager
         set
         {
             _gold = value;
-            OnGoldChange?.Invoke();
+            OnGoldChange?.Invoke(_gold);
 
         }
     }
